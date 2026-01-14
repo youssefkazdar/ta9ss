@@ -29,10 +29,11 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          # We changed 'vars' to 'secrets' here for consistency
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/ta9ss:latest .
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/ta9ss:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ta9ss:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ta9ss:latest
