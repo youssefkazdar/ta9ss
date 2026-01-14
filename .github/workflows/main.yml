@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -23,13 +21,12 @@ jobs:
           pip install -r requirements.txt
           pip install bandit
 
-      - name: SAST Security Scan (Bandit)
+      - name: SAST Security Scan
         run: bandit -r . -f json -o sast-results.json || true
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          # We changed 'vars' to 'secrets' here for consistency
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
