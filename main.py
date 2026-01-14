@@ -1,53 +1,60 @@
-import time
-import logging
-from fastapi import FastAPI, Request
+import time, logging, random, uuid
+from fastapi import FastAPI, Request, HTTPException
 from prometheus_fastapi_instrumentator import Instrumentator
 from pythonjsonlogger import jsonlogger
 
-# 1. Setup Structured Logging
+# 1. ENHANCED LOGGING (Structured JSON)
 logger = logging.getLogger()
 logHandler = logging.StreamHandler()
-formatter = jsonlogger.JsonFormatter('%(asctime)s %(levelname)s %(message)s')
+formatter = jsonlogger.JsonFormatter('%(asctime)s %(levelname)s %(message)s %(trace_id)s')
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
 logger.setLevel(logging.INFO)
 
-app = FastAPI(title="ta9ss API")
+app = FastAPI(title="ta9ss Pro API")
 
-# 2. Setup Metrics (Prometheus)
+# 2. METRICS (Prometheus)
 Instrumentator().instrument(app).expose(app)
 
-# Mock Weather Data
-weather_data = {
-    "tunis": {"temp": 25, "condition": "Sunny"},
-    "sfax": {"temp": 22, "condition": "Windy"},
-    "kairouan": {"temp": 30, "condition": "Hot"}
-}
-
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def add_observability(request: Request, call_next):
+    # Simulate TRACING: Generate a unique ID for every request
+    trace_id = str(uuid.uuid4())
     start_time = time.time()
+    
     response = await call_next(request)
+    
     duration = time.time() - start_time
     logger.info("request_processed", extra={
-        "path": request.url.path,
+        "trace_id": trace_id,
         "method": request.method,
-        "duration": duration,
-        "status": response.status_code
+        "path": request.url.path,
+        "status": response.status_code,
+        "duration": round(duration, 4)
     })
+    response.headers["X-Trace-ID"] = trace_id
     return response
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to ta9ss Weather API"}
+    return {"status": "Online", "version": "2.0", "message": "ta9ss Weather Service"}
 
 @app.get("/weather/{city}")
 def get_weather(city: str):
-    city = city.lower()
-    if city in weather_data:
-        return {"city": city, "data": weather_data[city]}
-    return {"error": "City not found"}, 404
+    # Simulation of a "Real" logic with randomness
+    cities = ["tunis", "sfax", "sousse", "bizerte"]
+    if city.lower() not in cities:
+        logger.error(f"City {city} not found")
+        raise HTTPException(status_code=404, detail="City not supported")
+    
+    return {
+        "city": city,
+        "temp": random.randint(15, 35),
+        "humidity": f"{random.randint(40, 90)}%",
+        "timestamp": time.time()
+    }
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# 3. HEALTH CHECK (Requirement for Kubernetes)
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}

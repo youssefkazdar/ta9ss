@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: ta9ss-deployment
 spec:
-  replicas: 2
+  replicas: 3 # Increased to 3 for better High Availability
   selector:
     matchLabels:
       app: ta9ss
@@ -15,9 +15,18 @@ spec:
       containers:
       - name: ta9ss
         image: youssefkazdar/ta9ss:latest
-        imagePullPolicy: Always
+        resources: # SECURITY: Prevent the app from consuming all server RAM
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
         ports:
         - containerPort: 8000
+        livenessProbe: # K8S SELF-HEALING: Restarts container if it crashes
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
