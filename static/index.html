@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ta9ss - Weather App</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #e0f2fe; display: flex; justify-content: center; padding: 50px; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        input { padding: 10px; border: 2px solid #3b82f6; border-radius: 5px; width: 70%; }
+        button { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; }
+        .info { font-size: 1.2rem; color: #1e3a8a; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>ta9ss ☀️</h1>
+        <p>Enter a city (Tunis, Sfax, Sousse...)</p>
+        <input type="text" id="cityInput" placeholder="City name...">
+        <button onclick="getWeather()">Check</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById('cityInput').value;
+            const resDiv = document.getElementById('result');
+            try {
+                const response = await fetch(`/weather/${city}`);
+                const data = await response.json();
+                if (response.ok) {
+                    resDiv.style.display = 'block';
+                    resDiv.style.background = '#dcfce7';
+                    resDiv.innerHTML = `<div class="info"><b>${data.city.toUpperCase()}</b><br>Temp: ${data.temp}°C<br>Condition: ${data.humidity} Humidity</div>`;
+                } else {
+                    resDiv.style.display = 'block';
+                    resDiv.style.background = '#fee2e2';
+                    resDiv.innerHTML = "City not found!";
+                }
+            } catch (err) {
+                alert("Error connecting to API");
+            }
+        }
+    </script>
+</body>
+</html>
