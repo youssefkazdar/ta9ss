@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ta9ss-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ta9ss
+  template:
+    metadata:
+      labels:
+        app: ta9ss
+    spec:
+      containers:
+      - name: ta9ss
+        image: youssefgazdar/ta9ss:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ta9ss-service
+spec:
+  type: NodePort
+  selector:
+    app: ta9ss
+  ports:
+    - port: 80
+      targetPort: 8000
+      nodePort: 30001

@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+prometheus-fastapi-instrumentator
+python-json-logger
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
