@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ta9ss
-        image: youssefgazdar/ta9ss:latest
+        image: youssefkazdar/ta9ss:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
